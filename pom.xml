@@ -28,6 +28,8 @@
 
         <picocli.version>4.7.7</picocli.version>
         <junit.version>5.11.4</junit.version>
+
+        <jackson.version>2.20.0</jackson.version>
     </properties>
 
     <dependencies>
@@ -36,6 +38,13 @@
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
             <version>${picocli.version}</version>
+        </dependency>
+
+        <!-- JSON serialization and deserialization -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
 
         <!-- Testing -->
