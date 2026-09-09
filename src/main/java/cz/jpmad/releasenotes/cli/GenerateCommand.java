@@ -1,12 +1,35 @@
 package cz.jpmad.releasenotes.cli;
 
-import cz.jpmad.releasenotes.git.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.jpmad.releasenotes.git.GitCommandException;
+import cz.jpmad.releasenotes.git.GitCommandExecutor;
+import cz.jpmad.releasenotes.git.GitCommit;
+import cz.jpmad.releasenotes.git.GitCommitService;
+import cz.jpmad.releasenotes.git.GitLogParser;
+import cz.jpmad.releasenotes.git.GitRepositoryInfo;
+import cz.jpmad.releasenotes.git.GitRepositoryService;
+import cz.jpmad.releasenotes.git.GitTagService;
+import cz.jpmad.releasenotes.github.GitHubApiClient;
+import cz.jpmad.releasenotes.github.GitHubApiException;
+import cz.jpmad.releasenotes.github.GitHubRepository;
+import cz.jpmad.releasenotes.github.GitHubRepositoryDetails;
+import cz.jpmad.releasenotes.github.GitHubRepositoryParser;
+import cz.jpmad.releasenotes.github.GitHubResponseParser;
+import cz.jpmad.releasenotes.github.GitHubTokenProvider;
+import cz.jpmad.releasenotes.github.JavaGitHubHttpClient;
 import cz.jpmad.releasenotes.output.MarkdownOutputWriter;
-import cz.jpmad.releasenotes.release.*;
+import cz.jpmad.releasenotes.release.ChangeCategorizer;
+import cz.jpmad.releasenotes.release.MarkdownRenderer;
+import cz.jpmad.releasenotes.release.ReleaseChange;
+import cz.jpmad.releasenotes.release.ReleaseRange;
+import cz.jpmad.releasenotes.release.ReleaseRangeException;
+import cz.jpmad.releasenotes.release.ReleaseRangeResolver;
 import picocli.CommandLine;
 
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -19,13 +42,14 @@ public class GenerateCommand implements Callable<Integer> {
 
     @CommandLine.Option(
             names = "--from",
-            description = "Start Git reference. Defaults to the latest tag."
+            description = "Previous release reference. "
+                    + "Defaults to the tag preceding the target release."
     )
     private String from;
 
     @CommandLine.Option(
             names = "--to",
-            description = "Target Git reference.",
+            description = "Target tagged reference.",
             defaultValue = "HEAD"
     )
     private String to;
@@ -35,6 +59,12 @@ public class GenerateCommand implements Callable<Integer> {
             description = "Write release notes to a Markdown file."
     )
     private Path output;
+
+    @CommandLine.Option(
+            names = "--github",
+            description = "Load repository data from GitHub API."
+    )
+    private boolean githubEnabled;
 
     @Override
     public Integer call() {
@@ -46,16 +76,22 @@ public class GenerateCommand implements Callable<Integer> {
             GitCommitService gitCommitService = new GitCommitService(gitCommandExecutor, new GitLogParser());
             ChangeCategorizer changeCategorizer = new ChangeCategorizer();
             MarkdownRenderer markdownRenderer = new MarkdownRenderer();
-
-            gitRepositoryService.getRepositoryInfo();
+            GitRepositoryInfo repositoryInfo = gitRepositoryService.getRepositoryInfo();
             ReleaseRange range = rangeResolver.resolve(from, to);
             List<GitCommit> commits = gitCommitService.findCommits(range);
             List<ReleaseChange> changes = changeCategorizer.categorize(commits);
+
+            if (githubEnabled) {
+                loadGitHubRepositoryDetails(repositoryInfo);
+            }
+
             String markdown = markdownRenderer.render(range, changes);
             writeOutput(markdown);
+
             return 0;
-        } catch (GitCommandException | ReleaseRangeException | IOException e) {
-            System.err.println("Error: " + e.getMessage());
+        } catch (GitCommandException | GitHubApiException | ReleaseRangeException | IOException exception
+        ) {
+            System.err.println("Error: " + exception.getMessage());
             return 1;
         }
     }
@@ -65,11 +101,42 @@ public class GenerateCommand implements Callable<Integer> {
             System.out.print(markdown);
             return;
         }
+
         MarkdownOutputWriter markdownOutputWriter = new MarkdownOutputWriter();
-        Path writtenFile = markdownOutputWriter.write(
-                output,
-                markdown
-        );
+        Path writtenFile = markdownOutputWriter.write(output, markdown);
+
         System.err.println("Release notes written to: " + writtenFile);
+    }
+
+    private GitHubRepositoryDetails loadGitHubRepositoryDetails(GitRepositoryInfo repositoryInfo) {
+        String remoteUrl = repositoryInfo.remoteUrl()
+                .orElseThrow(() -> new GitHubApiException("Git remote 'origin' is not configured.")
+                );
+
+        GitHubRepository repository =
+                new GitHubRepositoryParser()
+                        .parse(remoteUrl)
+                        .orElseThrow(() -> new GitHubApiException("Remote 'origin' is not a supported "
+                                        + "GitHub repository URL.")
+                        );
+
+        HttpClient httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
+
+        GitHubApiClient gitHubApiClient = new GitHubApiClient(
+                new JavaGitHubHttpClient(httpClient),
+                new GitHubResponseParser(
+                        new ObjectMapper()
+                ),
+                new GitHubTokenProvider()
+        );
+
+        GitHubRepositoryDetails details = gitHubApiClient.getRepository(repository);
+
+        System.err.println("GitHub repository loaded: " + details.fullName());
+
+        return details;
     }
 }
