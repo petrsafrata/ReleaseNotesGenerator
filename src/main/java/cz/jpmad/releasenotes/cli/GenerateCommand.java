@@ -11,6 +11,8 @@ import cz.jpmad.releasenotes.git.GitRepositoryService;
 import cz.jpmad.releasenotes.git.GitTagService;
 import cz.jpmad.releasenotes.github.GitHubApiClient;
 import cz.jpmad.releasenotes.github.GitHubApiException;
+import cz.jpmad.releasenotes.github.GitHubPullRequestAssociation;
+import cz.jpmad.releasenotes.github.GitHubPullRequestService;
 import cz.jpmad.releasenotes.github.GitHubRepository;
 import cz.jpmad.releasenotes.github.GitHubRepositoryDetails;
 import cz.jpmad.releasenotes.github.GitHubRepositoryParser;
@@ -21,6 +23,7 @@ import cz.jpmad.releasenotes.output.MarkdownOutputWriter;
 import cz.jpmad.releasenotes.release.ChangeCategorizer;
 import cz.jpmad.releasenotes.release.MarkdownRenderer;
 import cz.jpmad.releasenotes.release.ReleaseChange;
+import cz.jpmad.releasenotes.release.ReleaseChangeEnricher;
 import cz.jpmad.releasenotes.release.ReleaseRange;
 import cz.jpmad.releasenotes.release.ReleaseRangeException;
 import cz.jpmad.releasenotes.release.ReleaseRangeResolver;
@@ -62,7 +65,7 @@ public class GenerateCommand implements Callable<Integer> {
 
     @CommandLine.Option(
             names = "--github",
-            description = "Load repository data from GitHub API."
+            description = "Enrich release notes with data from GitHub API."
     )
     private boolean githubEnabled;
 
@@ -82,7 +85,7 @@ public class GenerateCommand implements Callable<Integer> {
             List<ReleaseChange> changes = changeCategorizer.categorize(commits);
 
             if (githubEnabled) {
-                loadGitHubRepositoryDetails(repositoryInfo);
+                changes = enrichWithGitHubData(repositoryInfo, commits, changes);
             }
 
             String markdown = markdownRenderer.render(range, changes);
@@ -108,7 +111,8 @@ public class GenerateCommand implements Callable<Integer> {
         System.err.println("Release notes written to: " + writtenFile);
     }
 
-    private GitHubRepositoryDetails loadGitHubRepositoryDetails(GitRepositoryInfo repositoryInfo) {
+    private List<ReleaseChange> enrichWithGitHubData(GitRepositoryInfo repositoryInfo, List<GitCommit> commits,
+                                                     List<ReleaseChange> changes) {
         String remoteUrl = repositoryInfo.remoteUrl()
                 .orElseThrow(() -> new GitHubApiException("Git remote 'origin' is not configured.")
                 );
@@ -120,23 +124,33 @@ public class GenerateCommand implements Callable<Integer> {
                                         + "GitHub repository URL.")
                         );
 
+        GitHubApiClient gitHubApiClient = createGitHubApiClient();
+        GitHubRepositoryDetails details = gitHubApiClient.getRepository(repository);
+
+        GitHubPullRequestService pullRequestService = new GitHubPullRequestService(gitHubApiClient);
+        List<GitHubPullRequestAssociation> associations = pullRequestService.findPullRequests(repository, commits);
+
+        ReleaseChangeEnricher changeEnricher = new ReleaseChangeEnricher();
+        List<ReleaseChange> enrichedChanges = changeEnricher.enrich(changes, associations);
+
+        System.err.println("GitHub repository loaded: " + details.fullName());
+        System.err.println("GitHub pull requests loaded: " + associations.size());
+
+        return enrichedChanges;
+    }
+
+    private GitHubApiClient createGitHubApiClient() {
         HttpClient httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .build();
 
-        GitHubApiClient gitHubApiClient = new GitHubApiClient(
+        return new GitHubApiClient(
                 new JavaGitHubHttpClient(httpClient),
                 new GitHubResponseParser(
                         new ObjectMapper()
                 ),
                 new GitHubTokenProvider()
         );
-
-        GitHubRepositoryDetails details = gitHubApiClient.getRepository(repository);
-
-        System.err.println("GitHub repository loaded: " + details.fullName());
-
-        return details;
     }
 }
