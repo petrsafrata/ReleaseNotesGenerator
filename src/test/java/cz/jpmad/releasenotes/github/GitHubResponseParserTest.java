@@ -72,6 +72,14 @@ class GitHubResponseParserTest {
                       "login": "jpmad",
                       "html_url": "https://github.com/jpmad"
                     },
+                    "labels": [
+                      {
+                        "id": 1,
+                        "name": "feature",
+                        "color": "a2eeef",
+                        "description": "New feature"
+                      }
+                    ],
                     "unknown_field": "ignored"
                   }
                 ]
@@ -93,6 +101,8 @@ class GitHubResponseParserTest {
         );
         assertEquals("jpmad", pullRequest.user().login());
         assertEquals("https://github.com/jpmad", pullRequest.user().htmlUrl());
+        assertEquals(1, pullRequest.labels().size());
+        assertEquals("feature", pullRequest.labels().getFirst().name());
     }
 
     @Test
@@ -118,5 +128,40 @@ class GitHubResponseParserTest {
         );
 
         assertEquals("Unable to parse GitHub pull request response.", exception.getMessage());
+    }
+
+    @Test
+    void parsesPullRequestLabels() {
+        String responseBody = """
+            [
+              {
+                "id": 987654,
+                "number": 42,
+                "title": "Add label categorization",
+                "state": "closed",
+                "html_url": "https://github.com/jpmad/ReleaseNotesGenerator/pull/42",
+                "user": {
+                  "login": "jpmad",
+                  "html_url": "https://github.com/jpmad"
+                },
+                "labels": [
+                  {
+                    "id": 123,
+                    "name": "enhancement",
+                    "color": "a2eeef",
+                    "description": "New feature or request"
+                  }
+                ]
+              }
+            ]
+            """;
+
+        List<GitHubPullRequest> pullRequests = parser.parsePullRequests(responseBody);
+        GitHubLabel label = pullRequests.getFirst().labels().getFirst();
+
+        assertEquals(123, label.id());
+        assertEquals("enhancement", label.name());
+        assertEquals("a2eeef", label.color());
+        assertEquals("New feature or request", label.description());
     }
 }
