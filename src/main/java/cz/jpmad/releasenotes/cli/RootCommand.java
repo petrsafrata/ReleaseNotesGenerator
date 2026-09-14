@@ -1,5 +1,6 @@
 package cz.jpmad.releasenotes.cli;
 
+import cz.jpmad.releasenotes.cli.ai.AiCommand;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -8,7 +9,8 @@ import picocli.CommandLine;
         mixinStandardHelpOptions = true,
         version = "Release Notes Generator 0.1.0",
         subcommands = {
-                GenerateCommand.class
+                GenerateCommand.class,
+                AiCommand.class
         }
 )
 public class RootCommand implements Runnable {
