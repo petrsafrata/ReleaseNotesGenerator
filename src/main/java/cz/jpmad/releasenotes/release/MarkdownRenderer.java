@@ -10,11 +10,17 @@ import java.util.stream.Collectors;
 public class MarkdownRenderer {
 
     public String render(ReleaseRange range, List<ReleaseChange> changes) {
+        return render(range, changes, null);
+    }
+
+    public String render(ReleaseRange range, List<ReleaseChange> changes, String summary) {
         StringBuilder markdown = new StringBuilder();
 
         markdown.append("## ")
                 .append(range.to())
                 .append("\n\n");
+
+        appendSummary(markdown, summary);
 
         if (changes.isEmpty()) {
             markdown.append("No changes found.\n");
@@ -34,6 +40,15 @@ public class MarkdownRenderer {
         }
 
         return markdown.toString();
+    }
+
+    private void appendSummary(StringBuilder markdown, String summary) {
+        if (summary == null || summary.isBlank()) {
+            return;
+        }
+
+        markdown.append(summary.strip())
+                .append("\n\n");
     }
 
     private Map<ChangeCategory, List<ReleaseChange>> groupByCategory(List<ReleaseChange> changes) {

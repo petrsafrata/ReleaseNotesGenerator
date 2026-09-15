@@ -139,12 +139,40 @@ class MarkdownRendererTest {
         String markdown = renderer.render(range, List.of(change));
 
         String expectedMarkdown = """
-            ## v0.0.4
+                ## v0.0.4
+                
+                ### Features
+                
+                - Add label categorization ([#42](https://github.com/jpmad/ReleaseNotesGenerator/pull/42))
+                
+                """;
 
+        assertEquals(expectedMarkdown, markdown);
+    }
+
+    @Test
+    void rendersAiSummary() {
+        ReleaseRange range = new ReleaseRange(Optional.of("v0.0.1"), "v0.0.2");
+
+        List<ReleaseChange> changes = List.of(
+                createChange(ChangeCategory.FEATURES, "Add interactive generation mode.", "def5678")
+        );
+
+        String markdown = renderer.render(
+                range,
+                changes,
+                "This release introduces an interactive mode for generating release notes."
+        );
+
+        String expectedMarkdown = """
+            ## v0.0.2
+            
+            This release introduces an interactive mode for generating release notes.
+            
             ### Features
-
-            - Add label categorization ([#42](https://github.com/jpmad/ReleaseNotesGenerator/pull/42))
-
+            
+            - Add interactive generation mode. (`def5678`)
+            
             """;
 
         assertEquals(expectedMarkdown, markdown);

@@ -9,7 +9,9 @@ import picocli.CommandLine;
         subcommands = {
                 AiStartCommand.class,
                 AiStatusCommand.class,
-                AiStopCommand.class
+                AiStopCommand.class,
+                AiModelsCommand.class,
+                AiPullCommand.class
         }
 )
 public class AiCommand implements Runnable {

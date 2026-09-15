@@ -78,4 +78,54 @@ class OllamaResponseParserTest {
 
         assertEquals("Unable to parse Ollama model response.", exception.getMessage());
     }
+
+    @Test
+    void parsesSuccessfulPullResponse() {
+        OllamaPullResponse response = parser.parsePullResponse("""
+            {
+              "status": "success"
+            }
+            """);
+
+        assertTrue(response.successful());
+    }
+
+    @Test
+    void parsesChatResponse() {
+        OllamaChatResponse response = parser.parseChatResponse("""
+            {
+              "model": "gemma3:4b",
+              "message": {
+                "role": "assistant",
+                "content": "{\\"summary\\":\\"Release summary\\",\\"changes\\":[]}"
+              },
+              "done": true,
+              "done_reason": "stop"
+            }
+            """);
+
+        assertEquals("gemma3:4b", response.model());
+        assertEquals("assistant", response.message().role());
+        assertEquals("{\"summary\":\"Release summary\",\"changes\":[]}", response.message().content());
+        assertTrue(response.done());
+        assertEquals("stop", response.doneReason());
+    }
+
+    @Test
+    void parsesErrorMessage() {
+        String errorMessage = parser.parseErrorMessage("""
+            {
+              "error": "model not found"
+            }
+            """);
+
+        assertEquals("model not found", errorMessage);
+    }
+
+    @Test
+    void ignoresInvalidErrorResponse() {
+        String errorMessage = parser.parseErrorMessage("invalid JSON");
+
+        assertEquals(null, errorMessage);
+    }
 }
