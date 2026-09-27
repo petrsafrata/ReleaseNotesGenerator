@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class AiReleaseNotesServiceTest {
 
@@ -73,5 +74,36 @@ class AiReleaseNotesServiceTest {
                 result.changes().getFirst().description()
         );
         assertEquals(ChangeCategory.BUG_FIXES, result.changes().getFirst().category());
+    }
+
+    @Test
+    void rejectsEmptyReleaseChanges() {
+        AiReleaseNotesClient client = (model, prompt) -> {
+            throw new AssertionError("AI client was not expected to be called.");
+        };
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        AiReleaseNotesService service = new AiReleaseNotesService(
+                client,
+                new AiPromptBuilder(
+                        objectMapper,
+                        new AiPromptLoader(objectMapper)
+                ),
+                new AiResponseValidator(),
+                new AiReleaseNotesMapper()
+        );
+
+        AiException exception = assertThrows(
+                AiException.class,
+                () -> service.improve(
+                        "gemma3:4b",
+                        "en",
+                        new ReleaseRange(Optional.of("0.0.3"), "0.0.4"),
+                        List.of()
+                )
+        );
+
+        assertEquals("AI release changes must not be empty.", exception.getMessage());
     }
 }

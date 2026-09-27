@@ -42,4 +42,24 @@ class AiResponseParserTest {
 
         assertEquals("Unable to parse AI release notes response.", exception.getMessage());
     }
+
+    @Test
+    void rejectsEmptyResponse() {
+        AiException exception = assertThrows(
+                AiException.class,
+                () -> parser.parse("")
+        );
+
+        assertEquals("AI release notes response must not be empty.", exception.getMessage());
+    }
+
+    @Test
+    void rejectsNullResponse() {
+        AiException exception = assertThrows(
+                AiException.class,
+                () -> parser.parse(null)
+        );
+
+        assertEquals("AI release notes response must not be empty.", exception.getMessage());
+    }
 }

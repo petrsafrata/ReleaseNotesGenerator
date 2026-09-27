@@ -159,4 +159,100 @@ class AiResponseValidatorTest {
     private AiReleaseNotesRequest createRequest(AiReleaseChange... changes) {
         return new AiReleaseNotesRequest("0.0.4", "en", List.of(changes));
     }
+
+    @Test
+    void rejectsNullResponse() {
+        AiReleaseNotesRequest request = createRequest(
+                new AiReleaseChange("pr-2", "FEATURES", "Add label categorization")
+        );
+
+        AiException exception = assertThrows(
+                AiException.class,
+                () -> validator.validate(request, null)
+        );
+
+        assertEquals("AI release notes response must not be null.", exception.getMessage());
+    }
+
+    @Test
+    void rejectsMissingSummary() {
+        AiReleaseNotesRequest request = createRequest(
+                new AiReleaseChange("pr-2", "FEATURES", "Add label categorization")
+        );
+
+        AiReleaseNotesResponse response = new AiReleaseNotesResponse(
+                null,
+                List.of(
+                        new AiImprovedChange("pr-2", "Added pull request label categorization.")
+                )
+        );
+
+        AiException exception = assertThrows(
+                AiException.class,
+                () -> validator.validate(request, response)
+        );
+
+        assertEquals("AI release summary must not be empty.", exception.getMessage());
+    }
+
+    @Test
+    void rejectsMissingChanges() {
+        AiReleaseNotesRequest request = createRequest(
+                new AiReleaseChange("pr-2", "FEATURES", "Add label categorization")
+        );
+
+        AiReleaseNotesResponse response = new AiReleaseNotesResponse(
+                "This release improves categorization.",
+                null
+        );
+
+        AiException exception = assertThrows(
+                AiException.class,
+                () -> validator.validate(request, response)
+        );
+
+        assertEquals("AI response change identifiers do not match the request.", exception.getMessage());
+    }
+
+    @Test
+    void rejectsMissingChangeIdentifier() {
+        AiReleaseNotesRequest request = createRequest(
+                new AiReleaseChange("pr-2", "FEATURES", "Add label categorization")
+        );
+
+        AiReleaseNotesResponse response = new AiReleaseNotesResponse(
+                "This release improves categorization.",
+                List.of(
+                        new AiImprovedChange(null, "Added pull request label categorization.")
+                )
+        );
+
+        AiException exception = assertThrows(
+                AiException.class,
+                () -> validator.validate(request, response)
+        );
+
+        assertEquals("AI response contains an empty change identifier.", exception.getMessage());
+    }
+
+    @Test
+    void rejectsNullDescription() {
+        AiReleaseNotesRequest request = createRequest(
+                new AiReleaseChange("pr-2", "FEATURES", "Add label categorization")
+        );
+
+        AiReleaseNotesResponse response = new AiReleaseNotesResponse(
+                "This release improves categorization.",
+                List.of(
+                        new AiImprovedChange("pr-2", null)
+                )
+        );
+
+        AiException exception = assertThrows(
+                AiException.class,
+                () -> validator.validate(request, response)
+        );
+
+        assertEquals("AI response contains an empty description for change: pr-2", exception.getMessage());
+    }
 }
