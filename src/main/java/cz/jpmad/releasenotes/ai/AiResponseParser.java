@@ -12,6 +12,10 @@ public class AiResponseParser {
     }
 
     public AiReleaseNotesResponse parse(String responseBody) {
+        if (responseBody == null || responseBody.isBlank()) {
+            throw new AiException("AI release notes response must not be empty.");
+        }
+
         try {
             return objectMapper.readValue(responseBody, AiReleaseNotesResponse.class);
         } catch (JsonProcessingException exception) {

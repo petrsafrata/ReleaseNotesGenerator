@@ -6,12 +6,24 @@ import java.util.Set;
 public class AiResponseValidator {
 
     public void validate(AiReleaseNotesRequest request, AiReleaseNotesResponse response) {
+        if (request == null) {
+            throw new AiException("AI release notes request must not be null.");
+        }
+
+        if (request.changes() == null) {
+            throw new AiException("AI request changes must not be null.");
+        }
+
         if (response == null) {
             throw new AiException("AI release notes response must not be null.");
         }
 
         if (response.summary() == null || response.summary().isBlank()) {
             throw new AiException("AI release summary must not be empty.");
+        }
+
+        if (response.changes() == null) {
+            throw new AiException("AI response changes must not be null.");
         }
 
         validateInputIdentifiers(request);
@@ -23,6 +35,10 @@ public class AiResponseValidator {
         Set<String> identifiers = new HashSet<>();
 
         for (AiReleaseChange change : request.changes()) {
+            if (change == null) {
+                throw new AiException("AI request contains a null change.");
+            }
+
             if (change.id() == null || change.id().isBlank()) {
                 throw new AiException("AI request contains an empty change identifier.");
             }
@@ -37,6 +53,10 @@ public class AiResponseValidator {
         Set<String> identifiers = new HashSet<>();
 
         for (AiImprovedChange change : response.changes()) {
+            if (change == null) {
+                throw new AiException("AI response contains a null change.");
+            }
+
             if (change.id() == null || change.id().isBlank()) {
                 throw new AiException("AI response contains an empty change identifier.");
             }
