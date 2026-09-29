@@ -3,7 +3,6 @@ package cz.jpmad.releasenotes.cli.ai;
 import cz.jpmad.releasenotes.docker.DockerException;
 import cz.jpmad.releasenotes.docker.DockerOllamaService;
 import cz.jpmad.releasenotes.docker.DockerOllamaState;
-import cz.jpmad.releasenotes.docker.ProcessDockerCommandRunner;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
@@ -15,29 +14,28 @@ import java.util.concurrent.Callable;
 )
 public class AiStatusCommand implements Callable<Integer> {
 
+    @CommandLine.ParentCommand
+    private AiCommand parentCommand;
+
     @Override
     public Integer call() {
         try {
-            DockerOllamaService service = createService();
+            DockerOllamaService service = parentCommand.servicesFactory().createDockerOllamaService();
             DockerOllamaState state = service.status();
 
             switch (state) {
                 case RUNNING -> {
-                    System.out.println("Ollama container is running.");
-                    System.out.println("Ollama API: http://localhost:11434");
+                    parentCommand.out().println("Ollama container is running.");
+                    parentCommand.out().println("Ollama API: http://localhost:11434");
                 }
-                case STOPPED -> System.out.println("Ollama container is stopped.");
-                case NOT_CREATED -> System.out.println("Ollama container has not been created.");
+                case STOPPED -> parentCommand.out().println("Ollama container is stopped.");
+                case NOT_CREATED -> parentCommand.out().println("Ollama container has not been created.");
             }
 
             return 0;
         } catch (DockerException exception) {
-            System.err.println("Error: " + exception.getMessage());
+            parentCommand.printError(exception);
             return 1;
         }
-    }
-
-    private DockerOllamaService createService() {
-        return new DockerOllamaService(new ProcessDockerCommandRunner());
     }
 }

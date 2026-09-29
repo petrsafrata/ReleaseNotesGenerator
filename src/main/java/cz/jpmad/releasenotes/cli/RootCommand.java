@@ -10,12 +10,19 @@ import picocli.CommandLine;
         version = "Release Notes Generator 0.1.0",
         subcommands = {
                 GenerateCommand.class,
-                AiCommand.class
+                AiCommand.class,
+                CommandLine.HelpCommand.class
         }
 )
 public class RootCommand implements Runnable {
+
+    @CommandLine.Spec
+    private CommandLine.Model.CommandSpec commandSpec;
+
     @Override
     public void run() {
-        // TODO document why this method is empty
+        commandSpec.commandLine().usage(
+                commandSpec.commandLine().getOut()
+        );
     }
 }

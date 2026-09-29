@@ -1,16 +1,10 @@
 package cz.jpmad.releasenotes.cli.ai;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.jpmad.releasenotes.ai.ollama.JavaOllamaHttpClient;
 import cz.jpmad.releasenotes.ai.ollama.OllamaApiClient;
 import cz.jpmad.releasenotes.ai.ollama.OllamaException;
-import cz.jpmad.releasenotes.ai.ollama.OllamaRequestSerializer;
-import cz.jpmad.releasenotes.ai.ollama.OllamaResponseParser;
 import picocli.CommandLine;
 
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.time.Duration;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(
@@ -19,6 +13,9 @@ import java.util.concurrent.Callable;
         mixinStandardHelpOptions = true
 )
 public class AiPullCommand implements Callable<Integer> {
+
+    @CommandLine.ParentCommand
+    private AiCommand parentCommand;
 
     @CommandLine.Parameters(
             index = "0",
@@ -32,43 +29,24 @@ public class AiPullCommand implements Callable<Integer> {
             description = "Ollama API URL.",
             defaultValue = "http://localhost:11434"
     )
-    private String ollamaUrl;
+    private URI ollamaUrl;
 
     @Override
     public Integer call() {
         try {
-            OllamaApiClient client = createClient();
+            OllamaApiClient client = parentCommand.servicesFactory().createOllamaApiClient(ollamaUrl);
 
-            System.out.println("Downloading Ollama model: " + model);
-            System.out.println("This may take several minutes.");
-            System.out.flush();
+            parentCommand.out().println("Downloading Ollama model: " + model);
+            parentCommand.out().println("This may take several minutes.");
+            parentCommand.out().flush();
 
             client.pullModel(model);
 
-            System.out.println("Ollama model downloaded successfully: " + model);
+            parentCommand.out().println("Ollama model downloaded successfully: " + model);
             return 0;
-        } catch (IllegalArgumentException exception) {
-            System.err.println("Error: Invalid Ollama URL: " + ollamaUrl);
-            return 1;
         } catch (OllamaException exception) {
-            System.err.println("Error: " + exception.getMessage());
+            parentCommand.printError(exception);
             return 1;
         }
-    }
-
-    private OllamaApiClient createClient() {
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        HttpClient httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
-
-        return new OllamaApiClient(
-                URI.create(ollamaUrl),
-                new JavaOllamaHttpClient(httpClient),
-                new OllamaRequestSerializer(objectMapper),
-                new OllamaResponseParser(objectMapper)
-        );
     }
 }

@@ -1,6 +1,7 @@
 package cz.jpmad.releasenotes.git;
 
 import java.util.Optional;
+import java.util.List;
 
 public class GitTagService implements GitTagProvider {
 
@@ -38,6 +39,23 @@ public class GitTagService implements GitTagProvider {
         } catch (GitCommandException exception) {
             return Optional.empty();
         }
+    }
+
+    public List<String> findTags() {
+        String output = gitCommandExecutor.execute(
+                "tag",
+                "--sort=-creatordate"
+        );
+
+        if (output == null || output.isBlank()) {
+            return List.of();
+        }
+
+        return output.lines()
+                .map(String::strip)
+                .filter(tag -> !tag.isBlank())
+                .distinct()
+                .toList();
     }
 
     private Optional<String> optionalTag(String tag) {
