@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -80,13 +81,37 @@ class ReleaseNotesGenerationServiceTest {
         when(changeCategorizer.categorize(List.of(commit))).thenReturn(List.of(change));
         when(markdownRenderer.render(range, List.of(change), null)).thenReturn("generated markdown");
 
-        ReleaseNotesGenerationResult result = service.generate(request);
+        List<ReleaseNotesGenerationProgress> progress = new ArrayList<>();
+
+        ReleaseNotesGenerationResult result =
+                service.generate(
+                        request,
+                        progress::add
+                );
 
         assertEquals("generated markdown", result.markdown());
         assertTrue(result.githubRepositoryFullName().isEmpty());
         assertEquals(0, result.githubPullRequestCount());
         assertFalse(result.aiImproved());
-
+        assertEquals(
+                List.of(new ReleaseNotesGenerationProgress(
+                                1,
+                                3,
+                                "Reading Git repository and resolving release range..."
+                        ),
+                        new ReleaseNotesGenerationProgress(
+                                2,
+                                3,
+                                "Loading and categorizing commits..."
+                        ),
+                        new ReleaseNotesGenerationProgress(
+                                3,
+                                3,
+                                "Rendering Markdown..."
+                        )
+                ),
+                progress
+        );
         verifyNoInteractions(githubEnrichmentService);
         verifyNoInteractions(aiReleaseNotesService);
     }
@@ -141,7 +166,13 @@ class ReleaseNotesGenerationServiceTest {
                 "This release improves pull request categorization."
         )).thenReturn("generated AI markdown");
 
-        ReleaseNotesGenerationResult result = service.generate(request);
+        List<ReleaseNotesGenerationProgress> progress = new ArrayList<>();
+
+        ReleaseNotesGenerationResult result =
+                service.generate(
+                        request,
+                        progress::add
+                );
 
         assertEquals("generated AI markdown", result.markdown());
         assertEquals(
@@ -150,6 +181,35 @@ class ReleaseNotesGenerationServiceTest {
         );
         assertEquals(1, result.githubPullRequestCount());
         assertTrue(result.aiImproved());
+        assertEquals(
+                List.of(new ReleaseNotesGenerationProgress(
+                                1,
+                                5,
+                                "Reading Git repository and resolving release range..."
+                        ),
+                        new ReleaseNotesGenerationProgress(
+                                2,
+                                5,
+                                "Loading and categorizing commits..."
+                        ),
+                        new ReleaseNotesGenerationProgress(
+                                3,
+                                5,
+                                "Loading GitHub pull requests..."
+                        ),
+                        new ReleaseNotesGenerationProgress(
+                                4,
+                                5,
+                                "Improving release notes using AI model gemma3:4b..."
+                        ),
+                        new ReleaseNotesGenerationProgress(
+                                5,
+                                5,
+                                "Rendering Markdown..."
+                        )
+                ),
+                progress
+        );
     }
 
     @Test

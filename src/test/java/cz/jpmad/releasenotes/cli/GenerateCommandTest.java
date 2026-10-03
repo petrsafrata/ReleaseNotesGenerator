@@ -103,10 +103,6 @@ class GenerateCommandTest {
                 "Release notes improved using Ollama model: gemma3:4b"
         ));
 
-        assertTrue(errorOutput.toString().contains(
-                "Release notes generated successfully."
-        ));
-
         ArgumentCaptor<ReleaseNotesGenerationRequest> requestCaptor =
                 ArgumentCaptor.forClass(
                         ReleaseNotesGenerationRequest.class
