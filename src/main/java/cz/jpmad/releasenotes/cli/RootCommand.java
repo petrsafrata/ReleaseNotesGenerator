@@ -2,12 +2,13 @@ package cz.jpmad.releasenotes.cli;
 
 import cz.jpmad.releasenotes.cli.ai.AiCommand;
 import picocli.CommandLine;
+import cz.jpmad.releasenotes.config.ApplicationVersionProvider;
 
 @CommandLine.Command(
         name = "release-notes",
         description = "Generate release notes from Git repository changes.",
         mixinStandardHelpOptions = true,
-        version = "Release Notes Generator 0.1.0",
+        versionProvider = ApplicationVersionProvider.class,
         subcommands = {
                 GenerateCommand.class,
                 AiCommand.class,
