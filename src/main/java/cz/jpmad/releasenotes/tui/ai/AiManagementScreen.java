@@ -1,5 +1,6 @@
 package cz.jpmad.releasenotes.tui.ai;
 
+import cz.jpmad.releasenotes.tui.TuiHeader;
 import org.jline.consoleui.prompt.ConsolePrompt;
 import org.jline.consoleui.prompt.PromptResultItemIF;
 import org.jline.consoleui.prompt.builder.PromptBuilder;
@@ -24,11 +25,12 @@ public class AiManagementScreen {
 
     private final LineReader lineReader;
     private final Terminal terminal;
+    private final TuiHeader tuiHeader;
 
-    public AiManagementScreen(LineReader lineReader,
-                              Terminal terminal) {
+    public AiManagementScreen(LineReader lineReader, Terminal terminal, TuiHeader tuiHeader) {
         this.lineReader = lineReader;
         this.terminal = terminal;
+        this.tuiHeader = tuiHeader;
     }
 
     public Optional<AiManagementAction> show() throws IOException {
@@ -60,18 +62,22 @@ public class AiManagementScreen {
 
         Map<String, PromptResultItemIF> result =
                 consolePrompt.prompt(
+                        tuiHeader.create(),
                         promptBuilder.build()
                 );
 
-        if (result.isEmpty()) {
+        if (result == null || result.isEmpty()) {
             return Optional.empty();
         }
 
-        return Optional.of(
-                resolveAction(
-                        result.get(ACTION).getResult()
-                )
-        );
+        PromptResultItemIF resultItem =
+                result.get(ACTION);
+
+        if (resultItem == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(resolveAction(resultItem.getResult()));
     }
 
     public Optional<String> promptModel() throws IOException {
@@ -86,16 +92,21 @@ public class AiManagementScreen {
 
         Map<String, PromptResultItemIF> result =
                 consolePrompt.prompt(
+                        tuiHeader.create(),
                         promptBuilder.build()
                 );
 
-        if (result.isEmpty()) {
+        if (result == null || result.isEmpty()) {
             return Optional.empty();
         }
 
-        return Optional.ofNullable(
-                result.get(MODEL).getResult()
-        );
+        PromptResultItemIF resultItem = result.get(MODEL);
+
+        if (resultItem == null) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(resultItem.getResult());
     }
 
     private AiManagementAction resolveAction(String action) {
@@ -106,26 +117,21 @@ public class AiManagementScreen {
             case MODELS -> AiManagementAction.MODELS;
             case PULL -> AiManagementAction.PULL;
             case BACK -> AiManagementAction.BACK;
-            default -> throw new IllegalStateException(
-                    "Unknown Ollama AI action: " + action
-            );
+            default -> throw new IllegalStateException("Unknown Ollama AI action: " + action);
         };
     }
 
     private ConsolePrompt createConsolePrompt() {
-        ConsolePrompt.UiConfig uiConfig = new ConsolePrompt.UiConfig(
-                ">",
-                "( )",
-                "(x)",
-                "( )"
-        );
+        ConsolePrompt.UiConfig uiConfig =
+                new ConsolePrompt.UiConfig(
+                        ">",
+                        "( )",
+                        "(x)",
+                        "( )"
+                );
 
         uiConfig.setCancellableFirstPrompt(true);
 
-        return new ConsolePrompt(
-                lineReader,
-                terminal,
-                uiConfig
-        );
+        return new ConsolePrompt(lineReader, terminal, uiConfig);
     }
 }

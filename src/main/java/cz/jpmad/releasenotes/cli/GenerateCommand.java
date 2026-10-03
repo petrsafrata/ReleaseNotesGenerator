@@ -117,7 +117,6 @@ public class GenerateCommand implements Callable<Integer> {
 
             printGenerationDetails(result);
             writeOutput(result.markdown());
-            printCompletionMessage();
             return 0;
         } catch (AiException | GitCommandException | GitHubApiException | OllamaException
                  | ReleaseRangeException | IOException exception
@@ -169,16 +168,5 @@ public class GenerateCommand implements Callable<Integer> {
 
             outputWriter.flush();
         };
-    }
-
-    private void printCompletionMessage() {
-        PrintWriter outputWriter =
-                commandSpec.commandLine().getErr();
-
-        outputWriter.println(
-                "Release notes generated successfully."
-        );
-
-        outputWriter.flush();
     }
 }

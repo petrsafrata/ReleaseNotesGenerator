@@ -14,6 +14,7 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
+import org.jline.utils.AttributedString;
 import org.jline.utils.InfoCmp;
 import picocli.CommandLine;
 import picocli.shell.jline3.PicocliJLineCompleter;
@@ -26,6 +27,8 @@ import cz.jpmad.releasenotes.ai.ollama.OllamaException;
 import cz.jpmad.releasenotes.git.GitCommandException;
 import cz.jpmad.releasenotes.docker.DockerException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Map;
@@ -45,10 +48,12 @@ public class ReleaseNotesTui {
 
     private final CommandLine commandLine;
     private final ApplicationServicesFactory servicesFactory;
+    private final TuiHeader tuiHeader;
 
     public ReleaseNotesTui(CommandLine commandLine) {
         this.commandLine = commandLine;
         this.servicesFactory = new ApplicationServicesFactory();
+        this.tuiHeader = new TuiHeader();
     }
 
     public int run() {
@@ -64,7 +69,6 @@ public class ReleaseNotesTui {
 
             LineReader lineReader = createLineReader(terminal);
 
-            printWelcome(terminal);
             runMainMenu(terminal, lineReader);
             printGoodbye(terminal);
 
@@ -180,7 +184,8 @@ public class ReleaseNotesTui {
                     new GenerateReleaseNotesScreen(
                             lineReader,
                             terminal,
-                            servicesFactory
+                            servicesFactory,
+                            tuiHeader
                     );
 
             Optional<GenerateReleaseNotesConfiguration> configuration =
@@ -192,12 +197,19 @@ public class ReleaseNotesTui {
 
             try {
                 clearScreen(terminal);
+                tuiHeader.print(terminal);
                 printGenerationHeader(terminal);
 
 
-                commandLine.execute(configuration.get()
+                int exitCode = commandLine.execute(
+                        configuration.get()
                                 .toArguments()
                                 .toArray(String[]::new)
+                );
+
+                printGenerationResult(
+                        terminal,
+                        exitCode
                 );
             } catch (RuntimeException exception) {
                 log.error(
@@ -302,8 +314,7 @@ public class ReleaseNotesTui {
         }
     }
 
-    private String showMainMenu(LineReader lineReader,
-                                Terminal terminal) throws IOException {
+    private String showMainMenu(LineReader lineReader, Terminal terminal) throws IOException {
         ConsolePrompt consolePrompt = createConsolePrompt(
                 lineReader,
                 terminal
@@ -329,9 +340,12 @@ public class ReleaseNotesTui {
                 .addPrompt();
 
         Map<String, PromptResultItemIF> result =
-                consolePrompt.prompt(promptBuilder.build());
+                consolePrompt.prompt(
+                        tuiHeader.create(),
+                        promptBuilder.build()
+                );
 
-        if (result == null) {
+        if (result == null || result.isEmpty()) {
             return EXIT;
         }
 
@@ -343,7 +357,8 @@ public class ReleaseNotesTui {
         try {
             AiManagementScreen screen = new AiManagementScreen(
                     lineReader,
-                    terminal
+                    terminal,
+                    tuiHeader
             );
 
             boolean running = true;
@@ -437,13 +452,12 @@ public class ReleaseNotesTui {
         }
     }
 
-    private boolean runAiCommand(Terminal terminal,
-                                 LineReader lineReader,
-                                 String... arguments) {
+    private boolean runAiCommand(Terminal terminal, LineReader lineReader, String... arguments) {
         clearScreen(terminal);
+        tuiHeader.print(terminal);
+        printAiHeader(terminal);
 
-        String[] commandArguments =
-                new String[arguments.length + 1];
+        String[] commandArguments = new String[arguments.length + 1];
 
         commandArguments[0] = "ai";
 
@@ -505,23 +519,6 @@ public class ReleaseNotesTui {
         }
     }
 
-    private void printGenerationHeader(Terminal terminal) {
-        terminal.writer().println(
-                new AttributedStringBuilder()
-                        .style(
-                                AttributedStyle.DEFAULT
-                                        .bold()
-                                        .foreground(AttributedStyle.CYAN)
-                        )
-                        .append("Generating release notes")
-                        .style(AttributedStyle.DEFAULT)
-                        .toAnsi(terminal)
-        );
-
-        terminal.writer().println();
-        terminal.writer().flush();
-    }
-
     private void clearScreen(Terminal terminal) {
         terminal.puts(
                 InfoCmp.Capability.clear_screen
@@ -531,13 +528,20 @@ public class ReleaseNotesTui {
     }
 
     private boolean runCommandMode(Terminal terminal, LineReader lineReader) {
+        tuiHeader.print(terminal);
+        terminal.writer().println(new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT
+                        .bold()
+                        .foreground(AttributedStyle.CYAN)
+                )
+                .append("◆ Command mode")
+                .style(AttributedStyle.DEFAULT)
+                .toAnsi(terminal)
+        );
+
         terminal.writer().println();
-        terminal.writer().println(
-                "Command mode. Type back to return to the menu."
-        );
-        terminal.writer().println(
-                "Type exit to close the application."
-        );
+        terminal.writer().println("Type back to return to the main menu.");
+        terminal.writer().println("Type exit to close the application.");
         terminal.writer().println();
         terminal.flush();
 
@@ -577,6 +581,17 @@ public class ReleaseNotesTui {
 
             executeCommand(input, lineReader, terminal);
         }
+    }
+
+    private String createPrompt(Terminal terminal) {
+        return new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT
+                        .foreground(AttributedStyle.CYAN)
+                )
+                .append("release-notes")
+                .style(AttributedStyle.DEFAULT)
+                .append("> ")
+                .toAnsi(terminal);
     }
 
     private void executeCommand(String input, LineReader lineReader,
@@ -621,41 +636,83 @@ public class ReleaseNotesTui {
         terminal.flush();
     }
 
-    private void printWelcome(Terminal terminal) {
-        terminal.writer().println(
-                new AttributedStringBuilder()
-                        .style(
-                                AttributedStyle.DEFAULT
-                                        .bold()
-                                        .foreground(AttributedStyle.CYAN)
-                        )
-                        .append("Release Notes Generator")
-                        .style(AttributedStyle.DEFAULT)
-                        .toAnsi(terminal)
+    private void printGenerationHeader(Terminal terminal) {
+        terminal.writer().println(new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT
+                        .bold()
+                        .foreground(AttributedStyle.CYAN)
+                )
+                .append("◆ Generating release notes")
+                .style(AttributedStyle.DEFAULT)
+                .toAnsi(terminal)
         );
 
-        terminal.writer().println(
-                "Use the arrow keys and Enter to select an action."
+        terminal.writer().println(new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT.faint())
+                .append("Please wait while the selected sources are processed.")
+                .style(AttributedStyle.DEFAULT)
+                .toAnsi(terminal)
         );
+
         terminal.writer().println();
-        terminal.flush();
+        terminal.writer().flush();
     }
 
-    private String createPrompt(Terminal terminal) {
-        return new AttributedStringBuilder()
-                .style(
-                        AttributedStyle.DEFAULT
-                                .foreground(AttributedStyle.CYAN)
+    private void printGenerationResult(Terminal terminal, int exitCode) {
+        terminal.writer().println();
+
+        if (exitCode == 0) {
+            terminal.writer().println(new AttributedStringBuilder()
+                    .style(AttributedStyle.DEFAULT
+                            .bold()
+                            .foreground(AttributedStyle.GREEN)
+                    )
+                    .append("✓ Generation completed successfully")
+                    .style(AttributedStyle.DEFAULT)
+                    .toAnsi(terminal)
+            );
+        } else {
+            terminal.writer().println(new AttributedStringBuilder()
+                    .style(AttributedStyle.DEFAULT
+                            .bold()
+                            .foreground(AttributedStyle.RED)
+                    )
+                    .append("✗ Generation failed")
+                    .style(AttributedStyle.DEFAULT)
+                    .toAnsi(terminal)
+            );
+        }
+
+        terminal.writer().flush();
+    }
+
+    private void printAiHeader(Terminal terminal) {
+        terminal.writer().println(new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT
+                        .bold()
+                        .foreground(AttributedStyle.CYAN)
                 )
-                .append("release-notes")
+                .append("◆ Ollama AI")
                 .style(AttributedStyle.DEFAULT)
-                .append("> ")
-                .toAnsi(terminal);
+                .toAnsi(terminal)
+        );
+
+        terminal.writer().println();
+        terminal.writer().flush();
     }
 
     private void printGoodbye(Terminal terminal) {
         terminal.writer().println();
-        terminal.writer().println("Goodbye.");
-        terminal.flush();
+        terminal.writer().println(new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT
+                        .bold()
+                        .foreground(AttributedStyle.CYAN)
+                )
+                .append("Thank you for using Release Notes Generator!")
+                .style(AttributedStyle.DEFAULT)
+                .toAnsi(terminal)
+        );
+        terminal.writer().println();
+        terminal.writer().flush();
     }
 }

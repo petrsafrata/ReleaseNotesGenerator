@@ -13,6 +13,7 @@ import cz.jpmad.releasenotes.config.ApplicationServicesFactory;
 import cz.jpmad.releasenotes.ai.ollama.OllamaException;
 import cz.jpmad.releasenotes.docker.DockerOllamaService;
 import cz.jpmad.releasenotes.docker.DockerOllamaState;
+import cz.jpmad.releasenotes.tui.TuiHeader;
 
 import java.net.URI;
 import java.util.Comparator;
@@ -66,11 +67,13 @@ public class GenerateReleaseNotesScreen {
     private final LineReader lineReader;
     private final Terminal terminal;
     private final ApplicationServicesFactory servicesFactory;
+    private final TuiHeader tuiHeader;
 
-    public GenerateReleaseNotesScreen(LineReader lineReader, Terminal terminal,  ApplicationServicesFactory servicesFactory) {
+    public GenerateReleaseNotesScreen(LineReader lineReader, Terminal terminal, ApplicationServicesFactory servicesFactory, TuiHeader header) {
         this.lineReader = lineReader;
         this.terminal = terminal;
         this.servicesFactory = servicesFactory;
+        this.tuiHeader = header;
     }
 
     public Optional<GenerateReleaseNotesConfiguration> show() throws IOException {
@@ -381,6 +384,7 @@ public class GenerateReleaseNotesScreen {
             throws IOException {
         Map<String, PromptResultItemIF> result =
                 consolePrompt.prompt(
+                        tuiHeader.create(),
                         promptBuilder.build()
                 );
 
@@ -415,45 +419,51 @@ public class GenerateReleaseNotesScreen {
                 .add()
                 .addPrompt();
 
-        List<AttributedString> header = new ArrayList<>(List.of(
-                new AttributedString(
-                        "Release Notes Configuration",
-                        AttributedStyle.DEFAULT
-                                .bold()
-                                .foreground(AttributedStyle.CYAN)
-                ),
-                new AttributedString(""),
-                new AttributedString(
+        List<AttributedString> header = tuiHeader.create();
+
+        header.add(
+                new AttributedString("Release Notes Configuration", AttributedStyle.DEFAULT
+                        .bold()
+                        .foreground(AttributedStyle.CYAN)
+                )
+        );
+        header.add(new AttributedString(""));
+        header.add(new AttributedString(
                         "Range: " + configuration.rangeDescription()
-                ),
-                new AttributedString(
+                )
+        );
+        header.add(new AttributedString(
                         "GitHub: " + enabledLabel(
                                 configuration.githubEnabled()
                         )
-                ),
-                new AttributedString(
+                )
+        );
+        header.add(new AttributedString(
                         "AI: " + enabledLabel(
                                 configuration.aiEnabled()
                         )
-                ),
-                new AttributedString(
+                )
+        );
+        header.add(new AttributedString(
                         "Model: " + valueOrDisabled(
                                 configuration.aiEnabled(),
                                 configuration.model()
                         )
-                ),
-                new AttributedString(
+                )
+        );
+        header.add(new AttributedString(
                         "Language: " + valueOrDisabled(
                                 configuration.aiEnabled(),
                                 configuration.language()
                         )
-                ),
+                )
+        );
+        header.add(
                 new AttributedString(
                         "Output: " + configuration.outputDescription()
-                ),
-                new AttributedString("")
-        ));
-
+                )
+        );
+        header.add(new AttributedString(""));
         Map<String, PromptResultItemIF> result =
                 consolePrompt.prompt(
                         header,
@@ -675,12 +685,9 @@ public class GenerateReleaseNotesScreen {
             DockerOllamaState state
     ) throws IOException {
         String message = switch (state) {
-            case NOT_CREATED ->
-                    "Ollama container has not been created:";
-            case STOPPED ->
-                    "Ollama container is stopped:";
-            case RUNNING ->
-                    "Ollama container is running:";
+            case NOT_CREATED -> "Ollama container has not been created:";
+            case STOPPED -> "Ollama container is stopped:";
+            case RUNNING -> "Ollama container is running:";
         };
 
         return promptList(
