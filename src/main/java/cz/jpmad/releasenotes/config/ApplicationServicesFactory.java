@@ -1,6 +1,7 @@
 package cz.jpmad.releasenotes.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import cz.jpmad.releasenotes.ai.AiPromptBuilder;
 import cz.jpmad.releasenotes.ai.AiPromptLoader;
 import cz.jpmad.releasenotes.ai.AiReleaseNotesMapper;
@@ -43,7 +44,9 @@ public class ApplicationServicesFactory {
     private final HttpClient httpClient;
 
     public ApplicationServicesFactory() {
-        objectMapper = new ObjectMapper();
+        objectMapper = JsonMapper.builder()
+                .findAndAddModules()
+                .build();
 
         httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
