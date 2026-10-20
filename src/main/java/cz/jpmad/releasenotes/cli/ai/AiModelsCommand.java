@@ -3,6 +3,7 @@ package cz.jpmad.releasenotes.cli.ai;
 import cz.jpmad.releasenotes.ai.ollama.OllamaApiClient;
 import cz.jpmad.releasenotes.ai.ollama.OllamaException;
 import cz.jpmad.releasenotes.ai.ollama.OllamaModel;
+import cz.jpmad.releasenotes.config.ApplicationDefaults;
 import picocli.CommandLine;
 
 import java.net.URI;
@@ -22,45 +23,46 @@ public class AiModelsCommand implements Callable<Integer> {
     @CommandLine.Option(
             names = "--ollama-url",
             description = "Ollama API URL.",
-            defaultValue = "http://localhost:11434"
+            defaultValue = ApplicationDefaults.OLLAMA_URL
     )
     private URI ollamaUrl;
 
     @Override
     public Integer call() {
         try {
-            OllamaApiClient client = parentCommand.servicesFactory().createOllamaApiClient(ollamaUrl);
+            OllamaApiClient client = parentCommand.createOllamaApiClient(ollamaUrl);
             List<OllamaModel> models = client.getModels();
 
             if (models.isEmpty()) {
                 parentCommand.out().println("No Ollama models are installed.");
                 parentCommand.out().println("Install one using: release-notes ai pull <model>");
-                return 0;
+                return CommandLine.ExitCode.OK;
             }
 
             parentCommand.out().println("Installed Ollama models:");
 
             for (OllamaModel model : models) {
-                parentCommand.out().println();
-                parentCommand.out().println("Name: " + model.name());
-                parentCommand.out().println("Size: " + formatSize(model.size()));
-
-                if (model.details() != null) {
-                    parentCommand.out().println(
-                            "Parameters: " + valueOrUnknown(model.details().parameterSize())
-                    );
-                    parentCommand.out().println(
-                            "Quantization: " + valueOrUnknown(model.details().quantizationLevel())
-                    );
-                }
+                printModel(model);
             }
-
-            return 0;
+            return CommandLine.ExitCode.OK;
         } catch (OllamaException exception) {
-            parentCommand.printError(exception);
+            parentCommand.printError("Unable to load installed Ollama models.", exception);
             parentCommand.err().println("Make sure Ollama is running or specify --ollama-url.");
-            return 1;
+            return CommandLine.ExitCode.SOFTWARE;
         }
+    }
+
+    private void printModel(OllamaModel model) {
+        parentCommand.out().println();
+        parentCommand.out().println("Name: " + model.name());
+        parentCommand.out().println("Size: " + formatSize(model.size()));
+
+        if (model.details() == null) {
+            return;
+        }
+
+        parentCommand.out().println("Parameters: " + valueOrUnknown(model.details().parameterSize()));
+        parentCommand.out().println("Quantization: " + valueOrUnknown(model.details().quantizationLevel()));
     }
 
     private String formatSize(long bytes) {
@@ -75,10 +77,6 @@ public class AiModelsCommand implements Callable<Integer> {
     }
 
     private String valueOrUnknown(String value) {
-        if (value == null || value.isBlank()) {
-            return "unknown";
-        }
-
-        return value;
+        return value == null || value.isBlank() ? "unknown" : value;
     }
 }

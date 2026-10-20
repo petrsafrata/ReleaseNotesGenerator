@@ -2,7 +2,9 @@ package cz.jpmad.releasenotes.cli;
 
 import cz.jpmad.releasenotes.ai.AiException;
 import cz.jpmad.releasenotes.ai.ollama.OllamaException;
+import cz.jpmad.releasenotes.config.ApplicationDefaults;
 import cz.jpmad.releasenotes.config.ApplicationServicesFactory;
+import cz.jpmad.releasenotes.generation.ReleaseNotesGenerationProgress;
 import cz.jpmad.releasenotes.generation.ReleaseNotesGenerationRequest;
 import cz.jpmad.releasenotes.generation.ReleaseNotesGenerationResult;
 import cz.jpmad.releasenotes.generation.ReleaseNotesGenerationService;
@@ -10,16 +12,15 @@ import cz.jpmad.releasenotes.git.GitCommandException;
 import cz.jpmad.releasenotes.github.GitHubApiException;
 import cz.jpmad.releasenotes.output.MarkdownOutputWriter;
 import cz.jpmad.releasenotes.release.ReleaseRangeException;
-import cz.jpmad.releasenotes.generation.ReleaseNotesGenerationProgress;
 import lombok.extern.log4j.Log4j2;
 import picocli.CommandLine;
 
-import java.io.PrintWriter;
-import java.util.function.Consumer;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 @Log4j2
 @CommandLine.Command(
@@ -44,7 +45,7 @@ public class GenerateCommand implements Callable<Integer> {
     @CommandLine.Option(
             names = "--to",
             description = "Target tagged reference.",
-            defaultValue = "HEAD"
+            defaultValue = ApplicationDefaults.TARGET_REFERENCE
     )
     private String to;
 
@@ -69,21 +70,21 @@ public class GenerateCommand implements Callable<Integer> {
     @CommandLine.Option(
             names = "--model",
             description = "Ollama model used to improve release notes.",
-            defaultValue = "gemma3:4b"
+            defaultValue = ApplicationDefaults.OLLAMA_MODEL
     )
     private String model;
 
     @CommandLine.Option(
             names = "--language",
             description = "Language used for AI-generated release notes.",
-            defaultValue = "en"
+            defaultValue = ApplicationDefaults.AI_LANGUAGE
     )
     private String language;
 
     @CommandLine.Option(
             names = "--ollama-url",
             description = "Base URL of the Ollama API.",
-            defaultValue = "http://localhost:11434"
+            defaultValue = ApplicationDefaults.OLLAMA_URL
     )
     private URI ollamaUrl;
 
@@ -117,56 +118,56 @@ public class GenerateCommand implements Callable<Integer> {
 
             printGenerationDetails(result);
             writeOutput(result.markdown());
-            return 0;
-        } catch (AiException | GitCommandException | GitHubApiException | OllamaException
-                 | ReleaseRangeException | IOException exception
+            return CommandLine.ExitCode.OK;
+        } catch (AiException | GitCommandException | GitHubApiException | OllamaException |
+                 ReleaseRangeException | IOException exception
         ) {
             log.error("Release notes generation failed.", exception);
-            commandSpec.commandLine().getErr().println("Error: " + exception.getMessage());
-            return 1;
+            err().println("Error: " + exception.getMessage());
+            return CommandLine.ExitCode.SOFTWARE;
         }
     }
 
     private void printGenerationDetails(ReleaseNotesGenerationResult result) {
         result.githubRepositoryFullName().ifPresent(repositoryName -> {
-            commandSpec.commandLine().getErr().println("GitHub repository loaded: " + repositoryName);
-            commandSpec.commandLine().getErr().println(
-                    "GitHub pull requests loaded: " + result.githubPullRequestCount()
-            );
+                    err().println("GitHub repository loaded: " + repositoryName);
+                    err().println("GitHub pull requests loaded: " + result.githubPullRequestCount());
         });
 
         if (result.aiImproved()) {
-            commandSpec.commandLine().getErr().println(
-                    "Release notes improved using Ollama model: " + model
-            );
+            err().println("Release notes improved using Ollama model: " + model);
         }
     }
 
     private void writeOutput(String markdown) throws IOException {
         if (output == null) {
-            commandSpec.commandLine().getOut().print(markdown);
+            out().print(markdown);
             return;
         }
 
         MarkdownOutputWriter markdownOutputWriter = new MarkdownOutputWriter();
         Path writtenFile = markdownOutputWriter.write(output, markdown);
-
-        commandSpec.commandLine().getErr().println("Release notes written to: " + writtenFile);
+        err().println("Release notes written to: " + writtenFile);
     }
 
     private Consumer<ReleaseNotesGenerationProgress> createProgressListener() {
         return progress -> {
-            PrintWriter outputWriter =
-                    commandSpec.commandLine().getErr();
-
-            outputWriter.printf(
+            err().printf(
                     "[%d/%d] %s%n",
                     progress.currentStep(),
                     progress.totalSteps(),
                     progress.message()
             );
 
-            outputWriter.flush();
+            err().flush();
         };
+    }
+
+    private PrintWriter out() {
+        return commandSpec.commandLine().getOut();
+    }
+
+    private PrintWriter err() {
+        return commandSpec.commandLine().getErr();
     }
 }

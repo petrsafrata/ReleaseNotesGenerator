@@ -2,6 +2,7 @@ package cz.jpmad.releasenotes.cli.ai;
 
 import cz.jpmad.releasenotes.ai.ollama.OllamaApiClient;
 import cz.jpmad.releasenotes.ai.ollama.OllamaException;
+import cz.jpmad.releasenotes.config.ApplicationDefaults;
 import picocli.CommandLine;
 
 import java.net.URI;
@@ -27,15 +28,14 @@ public class AiPullCommand implements Callable<Integer> {
     @CommandLine.Option(
             names = "--ollama-url",
             description = "Ollama API URL.",
-            defaultValue = "http://localhost:11434"
+            defaultValue = ApplicationDefaults.OLLAMA_URL
     )
     private URI ollamaUrl;
 
     @Override
     public Integer call() {
         try {
-            OllamaApiClient client = parentCommand.servicesFactory().createOllamaApiClient(ollamaUrl);
-
+            OllamaApiClient client = parentCommand.createOllamaApiClient(ollamaUrl);
             parentCommand.out().println("Downloading Ollama model: " + model);
             parentCommand.out().println("This may take several minutes.");
             parentCommand.out().flush();
@@ -43,10 +43,10 @@ public class AiPullCommand implements Callable<Integer> {
             client.pullModel(model);
 
             parentCommand.out().println("Ollama model downloaded successfully: " + model);
-            return 0;
+            return CommandLine.ExitCode.OK;
         } catch (OllamaException exception) {
-            parentCommand.printError(exception);
-            return 1;
+            parentCommand.printError("Unable to download the Ollama model.", exception);
+            return CommandLine.ExitCode.SOFTWARE;
         }
     }
 }

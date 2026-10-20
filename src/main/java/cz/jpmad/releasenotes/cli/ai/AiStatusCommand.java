@@ -1,5 +1,6 @@
 package cz.jpmad.releasenotes.cli.ai;
 
+import cz.jpmad.releasenotes.config.ApplicationDefaults;
 import cz.jpmad.releasenotes.docker.DockerException;
 import cz.jpmad.releasenotes.docker.DockerOllamaService;
 import cz.jpmad.releasenotes.docker.DockerOllamaState;
@@ -20,22 +21,21 @@ public class AiStatusCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         try {
-            DockerOllamaService service = parentCommand.servicesFactory().createDockerOllamaService();
+            DockerOllamaService service = parentCommand.createDockerOllamaService();
             DockerOllamaState state = service.status();
 
             switch (state) {
                 case RUNNING -> {
                     parentCommand.out().println("Ollama container is running.");
-                    parentCommand.out().println("Ollama API: http://localhost:11434");
+                    parentCommand.out().println("Ollama API: " + ApplicationDefaults.OLLAMA_URL);
                 }
                 case STOPPED -> parentCommand.out().println("Ollama container is stopped.");
                 case NOT_CREATED -> parentCommand.out().println("Ollama container has not been created.");
             }
-
-            return 0;
+            return CommandLine.ExitCode.OK;
         } catch (DockerException exception) {
-            parentCommand.printError(exception);
-            return 1;
+            parentCommand.printError("Unable to load the Ollama container status.", exception);
+            return CommandLine.ExitCode.SOFTWARE;
         }
     }
 }

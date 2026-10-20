@@ -1,10 +1,13 @@
 package cz.jpmad.releasenotes.cli.ai;
 
+import cz.jpmad.releasenotes.ai.ollama.OllamaApiClient;
 import cz.jpmad.releasenotes.config.ApplicationServicesFactory;
+import cz.jpmad.releasenotes.docker.DockerOllamaService;
 import lombok.extern.log4j.Log4j2;
 import picocli.CommandLine;
 
 import java.io.PrintWriter;
+import java.net.URI;
 
 @Log4j2
 @CommandLine.Command(
@@ -39,8 +42,12 @@ public class AiCommand implements Runnable {
         commandSpec.commandLine().usage(out());
     }
 
-    ApplicationServicesFactory servicesFactory() {
-        return servicesFactory;
+    DockerOllamaService createDockerOllamaService() {
+        return servicesFactory.createDockerOllamaService();
+    }
+
+    OllamaApiClient createOllamaApiClient(URI ollamaUrl) {
+        return servicesFactory.createOllamaApiClient(ollamaUrl);
     }
 
     PrintWriter out() {
@@ -51,8 +58,8 @@ public class AiCommand implements Runnable {
         return commandSpec.commandLine().getErr();
     }
 
-    void printError(Exception exception) {
-        log.error("AI command failed.", exception);
+    void printError(String logMessage, Exception exception) {
+        log.error(logMessage, exception);
         err().println("Error: " + exception.getMessage());
     }
 }

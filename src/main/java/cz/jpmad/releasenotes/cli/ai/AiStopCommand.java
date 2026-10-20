@@ -20,26 +20,25 @@ public class AiStopCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         try {
-            DockerOllamaService service = parentCommand.servicesFactory().createDockerOllamaService();
+            DockerOllamaService service = parentCommand.createDockerOllamaService();
             DockerOllamaState currentState = service.status();
 
             if (currentState == DockerOllamaState.NOT_CREATED) {
                 parentCommand.out().println("Ollama container has not been created.");
-                return 0;
+                return CommandLine.ExitCode.OK;
             }
 
             if (currentState == DockerOllamaState.STOPPED) {
                 parentCommand.out().println("Ollama container is already stopped.");
-                return 0;
+                return CommandLine.ExitCode.OK;
             }
 
             service.stop();
             parentCommand.out().println("Ollama container was stopped.");
-
-            return 0;
+            return CommandLine.ExitCode.OK;
         } catch (DockerException exception) {
-            parentCommand.printError(exception);
-            return 1;
+            parentCommand.printError("Unable to stop the Ollama container.", exception);
+            return CommandLine.ExitCode.SOFTWARE;
         }
     }
 }

@@ -1,5 +1,6 @@
 package cz.jpmad.releasenotes.cli.ai;
 
+import cz.jpmad.releasenotes.config.ApplicationDefaults;
 import cz.jpmad.releasenotes.docker.DockerException;
 import cz.jpmad.releasenotes.docker.DockerOllamaService;
 import cz.jpmad.releasenotes.docker.DockerOllamaState;
@@ -20,12 +21,12 @@ public class AiStartCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         try {
-            DockerOllamaService service = parentCommand.servicesFactory().createDockerOllamaService();
+            DockerOllamaService service = parentCommand.createDockerOllamaService();
             DockerOllamaState currentState = service.status();
 
             if (currentState == DockerOllamaState.RUNNING) {
                 parentCommand.out().println("Ollama container is already running.");
-                return 0;
+                return CommandLine.ExitCode.OK;
             }
 
             service.start();
@@ -36,12 +37,11 @@ public class AiStartCommand implements Callable<Integer> {
                 parentCommand.out().println("Ollama container was started.");
             }
 
-            parentCommand.out().println("Ollama API: http://localhost:11434");
-
-            return 0;
+            parentCommand.out().println("Ollama API: " + ApplicationDefaults.OLLAMA_URL);
+            return CommandLine.ExitCode.OK;
         } catch (DockerException exception) {
-            parentCommand.printError(exception);
-            return 1;
+            parentCommand.printError("Unable to start the Ollama container.", exception);
+            return CommandLine.ExitCode.SOFTWARE;
         }
     }
 }
