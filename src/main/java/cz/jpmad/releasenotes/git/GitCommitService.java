@@ -1,20 +1,21 @@
 package cz.jpmad.releasenotes.git;
 
 import cz.jpmad.releasenotes.release.ReleaseRange;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 public class GitCommitService {
 
     private static final String LOG_FORMAT = "%H%x1f%h%x1f%an%x1f%aI%x1f%s%x1e";
 
+    @NonNull
     private final GitCommandExecutor gitCommandExecutor;
-    private final GitLogParser gitLogParser;
 
-    public GitCommitService(GitCommandExecutor gitCommandExecutor, GitLogParser gitLogParser) {
-        this.gitCommandExecutor = gitCommandExecutor;
-        this.gitLogParser = gitLogParser;
-    }
+    @NonNull
+    private final GitLogParser gitLogParser;
 
     public List<GitCommit> findCommits(ReleaseRange range) {
         String gitRange = range.from()

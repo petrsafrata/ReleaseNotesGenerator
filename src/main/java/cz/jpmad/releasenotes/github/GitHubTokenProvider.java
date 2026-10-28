@@ -1,20 +1,22 @@
 package cz.jpmad.releasenotes.github;
 
+import lombok.AccessLevel;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.util.Map;
 import java.util.Optional;
 
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class GitHubTokenProvider {
 
     private static final String TOKEN_VARIABLE = "GITHUB_TOKEN";
 
+    @NonNull
     private final Map<String, String> environment;
 
     public GitHubTokenProvider() {
         this(System.getenv());
-    }
-
-    GitHubTokenProvider(Map<String, String> environment) {
-        this.environment = environment;
     }
 
     public Optional<String> findToken() {

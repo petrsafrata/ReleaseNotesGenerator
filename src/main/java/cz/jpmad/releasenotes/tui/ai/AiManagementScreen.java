@@ -1,6 +1,8 @@
 package cz.jpmad.releasenotes.tui.ai;
 
 import cz.jpmad.releasenotes.tui.TuiHeader;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.jline.consoleui.prompt.ConsolePrompt;
 import org.jline.consoleui.prompt.PromptResultItemIF;
 import org.jline.consoleui.prompt.builder.PromptBuilder;
@@ -11,6 +13,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 public class AiManagementScreen {
 
     private static final String ACTION = "action";
@@ -23,15 +26,14 @@ public class AiManagementScreen {
     private static final String PULL = "pull";
     private static final String BACK = "back";
 
+    @NonNull
     private final LineReader lineReader;
-    private final Terminal terminal;
-    private final TuiHeader tuiHeader;
 
-    public AiManagementScreen(LineReader lineReader, Terminal terminal, TuiHeader tuiHeader) {
-        this.lineReader = lineReader;
-        this.terminal = terminal;
-        this.tuiHeader = tuiHeader;
-    }
+    @NonNull
+    private final Terminal terminal;
+
+    @NonNull
+    private final TuiHeader tuiHeader;
 
     public Optional<AiManagementAction> show() throws IOException {
         ConsolePrompt consolePrompt = createConsolePrompt();

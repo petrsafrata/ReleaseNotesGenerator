@@ -2,16 +2,17 @@ package cz.jpmad.releasenotes.ai;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class AiPromptBuilder {
 
+    @NonNull
     private final ObjectMapper objectMapper;
-    private final AiPromptLoader promptLoader;
 
-    public AiPromptBuilder(ObjectMapper objectMapper, AiPromptLoader promptLoader) {
-        this.objectMapper = objectMapper;
-        this.promptLoader = promptLoader;
-    }
+    @NonNull
+    private final AiPromptLoader promptLoader;
 
     public AiPrompt build(AiReleaseNotesRequest request) {
         validateRequest(request);

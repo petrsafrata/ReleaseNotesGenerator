@@ -1,5 +1,7 @@
 package cz.jpmad.releasenotes.tui.generate;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.jline.consoleui.prompt.ConsolePrompt;
 import org.jline.consoleui.prompt.PromptResultItemIF;
 import org.jline.consoleui.prompt.builder.ListPromptBuilder;
@@ -22,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.nio.file.Path;
-import java.util.ArrayList;
 
+@RequiredArgsConstructor
 public class GenerateReleaseNotesScreen {
 
     private static final String RANGE = "range";
@@ -64,17 +66,17 @@ public class GenerateReleaseNotesScreen {
     private static final int OLLAMA_STARTUP_ATTEMPTS = 10;
     private static final long OLLAMA_STARTUP_DELAY_MILLIS = 500;
 
+    @NonNull
     private final LineReader lineReader;
-    private final Terminal terminal;
-    private final ApplicationServicesFactory servicesFactory;
-    private final TuiHeader tuiHeader;
 
-    public GenerateReleaseNotesScreen(LineReader lineReader, Terminal terminal, ApplicationServicesFactory servicesFactory, TuiHeader header) {
-        this.lineReader = lineReader;
-        this.terminal = terminal;
-        this.servicesFactory = servicesFactory;
-        this.tuiHeader = header;
-    }
+    @NonNull
+    private final Terminal terminal;
+
+    @NonNull
+    private final ApplicationServicesFactory servicesFactory;
+
+    @NonNull
+    private final TuiHeader tuiHeader;
 
     public Optional<GenerateReleaseNotesConfiguration> show() throws IOException {
         Optional<String> rangeResult = promptList(

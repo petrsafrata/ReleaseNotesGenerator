@@ -2,14 +2,14 @@ package cz.jpmad.releasenotes.ai.ollama;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class OllamaResponseParser {
 
+    @NonNull
     private final ObjectMapper objectMapper;
-
-    public OllamaResponseParser(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     public OllamaModelList parseModels(String responseBody) {
         try {

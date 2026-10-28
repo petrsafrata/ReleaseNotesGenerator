@@ -2,14 +2,14 @@ package cz.jpmad.releasenotes.ai;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class AiResponseParser {
 
+    @NonNull
     private final ObjectMapper objectMapper;
-
-    public AiResponseParser(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     public AiReleaseNotesResponse parse(String responseBody) {
         if (responseBody == null || responseBody.isBlank()) {

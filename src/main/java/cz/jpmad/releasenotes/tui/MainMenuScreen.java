@@ -1,5 +1,6 @@
 package cz.jpmad.releasenotes.tui;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.jline.consoleui.prompt.ConsolePrompt;
 import org.jline.consoleui.prompt.PromptResultItemIF;
@@ -20,6 +21,7 @@ public class MainMenuScreen {
     private static final String COMMAND_MODE = "command-mode";
     private static final String EXIT = "exit";
 
+    @NonNull
     private final TuiHeader tuiHeader;
 
     public MainMenuAction show(LineReader lineReader, Terminal terminal) throws IOException {

@@ -3,21 +3,21 @@ package cz.jpmad.releasenotes.ai;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+@RequiredArgsConstructor
 public class AiPromptLoader {
 
     private static final String SYSTEM_PROMPT = "prompts/release-notes-system.md";
     private static final String RESPONSE_SCHEMA = "prompts/release-notes-schema.json";
 
+    @NonNull
     private final ObjectMapper objectMapper;
-
-    public AiPromptLoader(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     public String loadSystemPrompt() {
         return loadResource(SYSTEM_PROMPT);

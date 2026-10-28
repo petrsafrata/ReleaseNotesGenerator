@@ -4,6 +4,7 @@ import cz.jpmad.releasenotes.git.GitCommit;
 import cz.jpmad.releasenotes.git.GitRepositoryInfo;
 import cz.jpmad.releasenotes.release.ReleaseChange;
 import cz.jpmad.releasenotes.release.ReleaseChangeEnricher;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -13,9 +14,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GitHubReleaseNotesEnrichmentService {
 
+    @NonNull
     private final GitHubApiClient apiClient;
+
+    @NonNull
     private final GitHubRepositoryParser repositoryParser;
+
+    @NonNull
     private final GitHubPullRequestService pullRequestService;
+
+    @NonNull
     private final ReleaseChangeEnricher changeEnricher;
 
     public GitHubEnrichmentResult enrich(GitRepositoryInfo repositoryInfo, List<GitCommit> commits,

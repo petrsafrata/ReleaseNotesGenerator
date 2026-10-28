@@ -1,5 +1,8 @@
 package cz.jpmad.releasenotes.github;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -7,16 +10,14 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
+@RequiredArgsConstructor
 public class JavaGitHubHttpClient implements GitHubHttpClient {
 
     private static final String API_VERSION = "2026-03-10";
     private static final String USER_AGENT = "release-notes-generator";
 
+    @NonNull
     private final HttpClient httpClient;
-
-    public JavaGitHubHttpClient(HttpClient httpClient) {
-        this.httpClient = httpClient;
-    }
 
     @Override
     public GitHubHttpResponse get(URI uri, String token) {

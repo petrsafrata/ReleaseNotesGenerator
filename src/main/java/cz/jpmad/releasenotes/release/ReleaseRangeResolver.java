@@ -1,17 +1,16 @@
 package cz.jpmad.releasenotes.release;
 
 import cz.jpmad.releasenotes.git.GitTagProvider;
-import cz.jpmad.releasenotes.git.GitTagService;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Optional;
 
+@RequiredArgsConstructor
 public class ReleaseRangeResolver {
 
+    @NonNull
     private final GitTagProvider gitTagProvider;
-
-    public ReleaseRangeResolver(GitTagProvider gitTagProvider) {
-        this.gitTagProvider = gitTagProvider;
-    }
 
     public ReleaseRange resolve(String from, String to) {
         String targetReference = resolveTargetReference(to);

@@ -4,18 +4,19 @@ import cz.jpmad.releasenotes.ai.AiPrompt;
 import cz.jpmad.releasenotes.ai.AiReleaseNotesClient;
 import cz.jpmad.releasenotes.ai.AiReleaseNotesResponse;
 import cz.jpmad.releasenotes.ai.AiResponseParser;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 public class OllamaReleaseNotesClient implements AiReleaseNotesClient {
 
+    @NonNull
     private final OllamaApiClient apiClient;
-    private final AiResponseParser responseParser;
 
-    public OllamaReleaseNotesClient(OllamaApiClient apiClient, AiResponseParser responseParser) {
-        this.apiClient = apiClient;
-        this.responseParser = responseParser;
-    }
+    @NonNull
+    private final AiResponseParser responseParser;
 
     @Override
     public AiReleaseNotesResponse generate(String model, AiPrompt prompt) {

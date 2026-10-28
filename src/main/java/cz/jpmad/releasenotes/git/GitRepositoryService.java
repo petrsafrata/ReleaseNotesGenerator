@@ -1,15 +1,16 @@
 package cz.jpmad.releasenotes.git;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.nio.file.Path;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 public class GitRepositoryService {
 
+    @NonNull
     private final GitCommandExecutor gitCommandExecutor;
-
-    public GitRepositoryService(GitCommandExecutor gitCommandExecutor) {
-        this.gitCommandExecutor = gitCommandExecutor;
-    }
 
     public GitRepositoryInfo getRepositoryInfo() {
         Path root = getRepositoryRoot();

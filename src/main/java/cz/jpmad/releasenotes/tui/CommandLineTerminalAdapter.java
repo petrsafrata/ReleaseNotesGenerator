@@ -1,5 +1,6 @@
 package cz.jpmad.releasenotes.tui;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.jline.terminal.Terminal;
 import picocli.CommandLine;
@@ -9,6 +10,7 @@ import java.io.PrintWriter;
 @RequiredArgsConstructor
 public class CommandLineTerminalAdapter {
 
+    @NonNull
     private final CommandLine commandLine;
 
     public void configure(Terminal terminal) {

@@ -12,6 +12,9 @@ import cz.jpmad.releasenotes.git.GitCommandException;
 import cz.jpmad.releasenotes.github.GitHubApiException;
 import cz.jpmad.releasenotes.output.MarkdownOutputWriter;
 import cz.jpmad.releasenotes.release.ReleaseRangeException;
+import lombok.AccessLevel;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import picocli.CommandLine;
 
@@ -23,6 +26,7 @@ import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 @Log4j2
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 @CommandLine.Command(
         name = "generate",
         description = "Generate release notes between two Git references.",
@@ -30,6 +34,7 @@ import java.util.function.Consumer;
 )
 public class GenerateCommand implements Callable<Integer> {
 
+    @NonNull
     private final ApplicationServicesFactory servicesFactory;
 
     @CommandLine.Spec
@@ -90,10 +95,6 @@ public class GenerateCommand implements Callable<Integer> {
 
     public GenerateCommand() {
         this(new ApplicationServicesFactory());
-    }
-
-    GenerateCommand(ApplicationServicesFactory servicesFactory) {
-        this.servicesFactory = servicesFactory;
     }
 
     @Override

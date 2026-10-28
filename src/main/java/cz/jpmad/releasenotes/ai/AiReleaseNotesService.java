@@ -2,23 +2,25 @@ package cz.jpmad.releasenotes.ai;
 
 import cz.jpmad.releasenotes.release.ReleaseChange;
 import cz.jpmad.releasenotes.release.ReleaseRange;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 public class AiReleaseNotesService {
 
+    @NonNull
     private final AiReleaseNotesClient client;
-    private final AiPromptBuilder promptBuilder;
-    private final AiResponseValidator responseValidator;
-    private final AiReleaseNotesMapper mapper;
 
-    public AiReleaseNotesService(AiReleaseNotesClient client, AiPromptBuilder promptBuilder,
-                                 AiResponseValidator responseValidator, AiReleaseNotesMapper mapper) {
-        this.client = client;
-        this.promptBuilder = promptBuilder;
-        this.responseValidator = responseValidator;
-        this.mapper = mapper;
-    }
+    @NonNull
+    private final AiPromptBuilder promptBuilder;
+
+    @NonNull
+    private final AiResponseValidator responseValidator;
+
+    @NonNull
+    private final AiReleaseNotesMapper mapper;
 
     public AiGenerationResult improve(String model, String language, ReleaseRange range,
                                       List<ReleaseChange> changes) {

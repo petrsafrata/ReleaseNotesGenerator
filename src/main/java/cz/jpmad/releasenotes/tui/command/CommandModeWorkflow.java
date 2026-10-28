@@ -2,6 +2,7 @@ package cz.jpmad.releasenotes.tui.command;
 
 import cz.jpmad.releasenotes.tui.CommandLineTerminalAdapter;
 import cz.jpmad.releasenotes.tui.TuiConsole;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.jline.reader.EndOfFileException;
@@ -17,7 +18,10 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class CommandModeWorkflow {
 
+    @NonNull
     private final CommandLineTerminalAdapter commandLineTerminalAdapter;
+
+    @NonNull
     private final TuiConsole tuiConsole;
 
     /**

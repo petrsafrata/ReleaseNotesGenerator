@@ -1,22 +1,24 @@
 package cz.jpmad.releasenotes.github;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.net.URI;
 import java.util.List;
 
+@RequiredArgsConstructor
 public class GitHubApiClient {
 
     private static final String API_BASE_URL = "https://api.github.com";
 
+    @NonNull
     private final GitHubHttpClient httpClient;
-    private final GitHubResponseParser responseParser;
-    private final GitHubTokenProvider tokenProvider;
 
-    public GitHubApiClient(GitHubHttpClient httpClient, GitHubResponseParser responseParser,
-                           GitHubTokenProvider tokenProvider) {
-        this.httpClient = httpClient;
-        this.responseParser = responseParser;
-        this.tokenProvider = tokenProvider;
-    }
+    @NonNull
+    private final GitHubResponseParser responseParser;
+
+    @NonNull
+    private final GitHubTokenProvider tokenProvider;
 
     public GitHubRepositoryDetails getRepository(GitHubRepository repository) {
         String token = tokenProvider.requireToken();

@@ -1,5 +1,9 @@
 package cz.jpmad.releasenotes.docker;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 public class DockerOllamaService {
 
     private static final String CONTAINER_NAME = "release-notes-ollama";
@@ -7,11 +11,8 @@ public class DockerOllamaService {
     private static final String IMAGE_NAME = "ollama/ollama";
     private static final String OLLAMA_PORT = "11434:11434";
 
+    @NonNull
     private final DockerCommandRunner commandRunner;
-
-    public DockerOllamaService(DockerCommandRunner commandRunner) {
-        this.commandRunner = commandRunner;
-    }
 
     public DockerOllamaState status() {
         requireDocker();

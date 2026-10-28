@@ -7,6 +7,7 @@ import cz.jpmad.releasenotes.git.GitCommandException;
 import cz.jpmad.releasenotes.tui.CommandLineTerminalAdapter;
 import cz.jpmad.releasenotes.tui.TuiConsole;
 import cz.jpmad.releasenotes.tui.TuiHeader;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.jline.reader.LineReader;
@@ -19,9 +20,16 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class GenerateReleaseNotesWorkflow {
 
+    @NonNull
     private final ApplicationServicesFactory servicesFactory;
+
+    @NonNull
     private final TuiHeader tuiHeader;
+
+    @NonNull
     private final TuiConsole tuiConsole;
+
+    @NonNull
     private final CommandLineTerminalAdapter commandLineTerminalAdapter;
 
     public void run(Terminal terminal, LineReader lineReader) {

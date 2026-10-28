@@ -1,16 +1,16 @@
 package cz.jpmad.releasenotes.github;
 
 import cz.jpmad.releasenotes.git.GitCommit;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import java.util.*;
 
+@RequiredArgsConstructor
 public class GitHubPullRequestService {
 
+    @NonNull
     private final GitHubApiClient apiClient;
-
-    public GitHubPullRequestService(GitHubApiClient apiClient) {
-        this.apiClient = apiClient;
-    }
 
     public List<GitHubPullRequestAssociation> findPullRequests(GitHubRepository repository, List<GitCommit> commits) {
         Map<Integer, MutableAssociation> associations = new LinkedHashMap<>();

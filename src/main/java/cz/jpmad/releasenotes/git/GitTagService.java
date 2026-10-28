@@ -1,15 +1,16 @@
 package cz.jpmad.releasenotes.git;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.util.Optional;
 import java.util.List;
 
+@RequiredArgsConstructor
 public class GitTagService implements GitTagProvider {
 
+    @NonNull
     private final GitCommandExecutor gitCommandExecutor;
-
-    public GitTagService(GitCommandExecutor gitCommandExecutor) {
-        this.gitCommandExecutor = gitCommandExecutor;
-    }
 
     @Override
     public Optional<String> findExactTag(String reference) {

@@ -3,16 +3,16 @@ package cz.jpmad.releasenotes.github;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 public class GitHubResponseParser {
 
+    @NonNull
     private final ObjectMapper objectMapper;
-
-    public GitHubResponseParser(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     public GitHubRepositoryDetails parseRepository(String responseBody) {
         try {

@@ -28,41 +28,40 @@ public class TuiHeader {
     public List<AttributedString> create() {
         List<AttributedString> header = new ArrayList<>();
         header.add(createLine(
-                        "    ▄▄▄▄▄▄▄    ",
-                        "",
-                        AttributedStyle.DEFAULT
-                )
-        );
+                "    ▄▄▄▄▄▄     ",
+                "",
+                AttributedStyle.DEFAULT
+        ));
+
         header.add(createLine(
-                        "    █ ▄ ▄ █    ",
-                        "Welcome to",
-                        AttributedStyle.DEFAULT
-                )
-        );
+                "    █    ▀█▄   ",
+                "Welcome to",
+                AttributedStyle.DEFAULT
+        ));
+
         header.add(createLine(
-                        "    █  ▄  █    ",
-                        "RELEASE NOTES GENERATOR",
-                        TITLE_STYLE
-                )
-        );
+                "    █ ✓ ━ ██   ",
+                "RELEASE NOTES GENERATOR",
+                TITLE_STYLE
+        ));
+
         header.add(createLine(
-                        "    █ ███ █    ",
-                        "Git  •  GitHub  •  Local AI",
-                        SUBTITLE_STYLE
-                )
-        );
+                "    █ ✓ ━ █▀   ",
+                "Git  •  GitHub  •  Local AI",
+                SUBTITLE_STYLE
+        ));
+
         header.add(createLine(
-                        "    ▀█▄▄▄█▀    ",
-                        "Version " + ApplicationVersion.get(),
-                        MUTED_STYLE
-                )
-        );
+                "    █ + ━ █    ",
+                "Version " + ApplicationVersion.get(),
+                MUTED_STYLE
+        ));
+
         header.add(createLine(
-                        "      ▀ ▀      ",
-                        "",
-                        AttributedStyle.DEFAULT
-                )
-        );
+                "    ▀▀▀▀▀▀     ",
+                "",
+                AttributedStyle.DEFAULT
+        ));
         header.add(new AttributedString(""));
         return header;
     }

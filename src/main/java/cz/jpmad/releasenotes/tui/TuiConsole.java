@@ -1,5 +1,6 @@
 package cz.jpmad.releasenotes.tui;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
@@ -12,6 +13,7 @@ import org.jline.utils.InfoCmp;
 @RequiredArgsConstructor
 public class TuiConsole {
 
+    @NonNull
     private final TuiHeader tuiHeader;
 
     public void clear(Terminal terminal) {

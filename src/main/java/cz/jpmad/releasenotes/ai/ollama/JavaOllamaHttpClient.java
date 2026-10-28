@@ -1,5 +1,8 @@
 package cz.jpmad.releasenotes.ai.ollama;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
@@ -10,13 +13,11 @@ import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
+@RequiredArgsConstructor
 public class JavaOllamaHttpClient implements OllamaHttpClient {
 
+    @NonNull
     private final HttpClient httpClient;
-
-    public JavaOllamaHttpClient(HttpClient httpClient) {
-        this.httpClient = httpClient;
-    }
 
     @Override
     public OllamaHttpResponse get(URI uri) {

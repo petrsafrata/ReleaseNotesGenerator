@@ -1,25 +1,27 @@
 package cz.jpmad.releasenotes.ai.ollama;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 
+@RequiredArgsConstructor
 public class OllamaApiClient {
 
+    @NonNull
     private final URI baseUri;
-    private final OllamaHttpClient httpClient;
-    private final OllamaRequestSerializer requestSerializer;
-    private final OllamaResponseParser responseParser;
 
-    public OllamaApiClient(URI baseUri, OllamaHttpClient httpClient, OllamaRequestSerializer requestSerializer,
-                           OllamaResponseParser responseParser) {
-        this.baseUri = baseUri;
-        this.httpClient = httpClient;
-        this.requestSerializer = requestSerializer;
-        this.responseParser = responseParser;
-    }
+    @NonNull
+    private final OllamaHttpClient httpClient;
+
+    @NonNull
+    private final OllamaRequestSerializer requestSerializer;
+
+    @NonNull
+    private final OllamaResponseParser responseParser;
 
     public List<OllamaModel> getModels() {
         URI uri = baseUri.resolve("/api/tags");
