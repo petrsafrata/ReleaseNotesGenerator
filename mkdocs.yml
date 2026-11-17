@@ -1,0 +1,84 @@
+site_name: Release Notes Generator
+site_description: Generate structured release notes from Git, GitHub pull requests, and local AI
+site_author: Petr Šafrata
+site_url: https://petrsafrata.github.io/ReleaseNotesGenerator/
+
+repo_name: petrsafrata/ReleaseNotesGenerator
+repo_url: https://github.com/petrsafrata/ReleaseNotesGenerator
+edit_uri: edit/master/docs/
+
+theme:
+  name: material
+  language: en
+  logo: images/release-notes-generator-logo.png
+  favicon: images/release-notes-generator-logo.png
+  features:
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Configuration and Usage: getting-started/configuration.md
+  - Integrations:
+      - GitHub: integrations/github.md
+      - Ollama AI: integrations/ollama.md
+  - Architecture: architecture.md
+  - Development: development.md
+  - Troubleshooting: troubleshooting.md
+  - Legal:
+      - Privacy Policy: legal/privacy.md
+      - Third-Party Notices: legal/third-party-notices.md
+      - License: legal/license.md
+  - Release Notes: https://github.com/petrsafrata/ReleaseNotesGenerator/blob/master/RELEASE-NOTES.md
+  - Contributing: https://github.com/petrsafrata/ReleaseNotesGenerator/blob/master/CONTRIBUTING.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      base_path:
+        - .
+      check_paths: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
+
+copyright: Copyright &copy; 2026 Petr Šafrata
