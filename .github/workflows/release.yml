@@ -86,7 +86,7 @@ jobs:
         run: sha256sum release-notes.jar > release-notes.jar.sha256
 
       - name: Upload release artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: release-notes-${{ steps.version.outputs.version }}
           path: |
