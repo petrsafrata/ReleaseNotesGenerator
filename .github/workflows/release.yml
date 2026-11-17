@@ -35,9 +35,6 @@ jobs:
           java-version: "21"
           cache: maven
 
-      - name: Make Maven Wrapper executable
-        run: chmod +x ./mvnw
-
       - name: Read and validate version
         id: version
         shell: bash
@@ -60,7 +57,7 @@ jobs:
 
           VERSION="${{ steps.version.outputs.version }}"
           POM_VERSION="$(
-            ./mvnw --batch-mode help:evaluate \
+            mvn --batch-mode help:evaluate \
               -Dexpression=project.version \
               -DforceStdout \
               -q
@@ -72,7 +69,7 @@ jobs:
           fi
 
       - name: Build and run tests
-        run: ./mvnw --batch-mode --no-transfer-progress clean verify
+        run: mvn --batch-mode --no-transfer-progress clean verify
 
       - name: Verify executable JAR
         shell: bash
