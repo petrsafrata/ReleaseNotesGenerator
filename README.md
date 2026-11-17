@@ -9,7 +9,7 @@
 ![Ollama](https://img.shields.io/badge/Ollama-Local_AI-black)
 ![Docker](https://img.shields.io/badge/Docker-Optional-2496ED?logo=docker&logoColor=white)
 ![Local First](https://img.shields.io/badge/Local--First-Yes-brightgreen)
-[![CI + Auto Release](https://github.com/petrsafrata/ReleaseNotesGenerator/actions/workflows/ci-release.yml/badge.svg)](https://github.com/petrsafrata/ReleaseNotesGenerator/actions/workflows/ci-release.yml)
+[![CI + Auto Release](https://github.com/petrsafrata/ReleaseNotesGenerator/actions/workflows/release.yml/badge.svg)](https://github.com/petrsafrata/ReleaseNotesGenerator/actions/workflows/release.yml)
 [![Documentation](https://github.com/petrsafrata/ReleaseNotesGenerator/actions/workflows/docs.yml/badge.svg)](https://github.com/petrsafrata/ReleaseNotesGenerator/actions/workflows/docs.yml)
 ![Open Source](https://img.shields.io/badge/Open%20Source-Yes-brightgreen?logo=opensourceinitiative&logoColor=white)
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue?logo=apache&logoColor=white)
