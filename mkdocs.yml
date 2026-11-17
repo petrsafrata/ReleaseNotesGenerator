@@ -49,8 +49,7 @@ nav:
   - Development: development.md
   - Troubleshooting: troubleshooting.md
   - Legal:
-      - Privacy Policy: legal/privacy.md
-      - Third-Party Notices: legal/third-party-notices.md
+      - Privacy: legal/privacy.md
       - License: legal/license.md
   - Release Notes: https://github.com/petrsafrata/ReleaseNotesGenerator/blob/master/RELEASE-NOTES.md
   - Contributing: https://github.com/petrsafrata/ReleaseNotesGenerator/blob/master/CONTRIBUTING.md
